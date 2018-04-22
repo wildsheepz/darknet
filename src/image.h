@@ -30,7 +30,7 @@ image crop_image(image im, int dx, int dy, int w, int h);
 image random_crop_image(image im, int w, int h);
 image random_augment_image(image im, float angle, float aspect, int low, int high, int size);
 void random_distort_image(image im, float hue, float saturation, float exposure);
-image resize_image(image im, int w, int h);
+YOLODLL_API image resize_image(image im, int w, int h);
 void fill_image(image m, float s);
 void letterbox_image_into(image im, int w, int h, image boxed);
 YOLODLL_API image letterbox_image(image im, int w, int h);
@@ -77,9 +77,9 @@ image load_image(char *filename, int w, int h, int c);
 YOLODLL_API image load_image_color(char *filename, int w, int h);
 image **load_alphabet();
 
-float get_pixel(image m, int x, int y, int c);
+YOLODLL_API float get_pixel(image m, int x, int y, int c);
 float get_pixel_extend(image m, int x, int y, int c);
-void set_pixel(image m, int x, int y, int c, float val);
+YOLODLL_API void set_pixel(image m, int x, int y, int c, float val);
 void add_pixel(image m, int x, int y, int c, float val);
 float bilinear_interpolate(image im, float x, float y, int c);
 
