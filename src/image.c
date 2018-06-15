@@ -950,7 +950,7 @@ image load_image_cv(char *filename, int channels)
         sprintf(buff, "echo %s >> bad.list", filename);
         system(buff);
         return make_image(10,10,3);
-        //exit(EXIT_FAILURE);
+        //exit(0);
     }
     image out = ipl_to_image(src);
     cvReleaseImage(&src);
@@ -1691,11 +1691,7 @@ image load_image_stb(char *filename, int channels)
     unsigned char *data = stbi_load(filename, &w, &h, &c, channels);
     if (!data) {
         fprintf(stderr, "Cannot load image \"%s\"\nSTB Reason: %s\n", filename, stbi_failure_reason());
-		char buff[256];
-		sprintf(buff, "echo %s >> bad.list", filename);
-		system(buff);
-		return make_image(10, 10, 3);
-        //exit(EXIT_FAILURE);
+        exit(1);
     }
     if(channels) c = channels;
     int i,j,k;

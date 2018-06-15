@@ -67,16 +67,7 @@ static int streamInit[16] = { 0 };
 cudaStream_t get_cuda_stream() {
 	int i = cuda_get_device();
 	if (!streamInit[i]) {
-		cudaError_t status = cudaStreamCreate(&streamsArray[i]);
-		//cudaError_t status = cudaStreamCreateWithFlags(&streamsArray[i], cudaStreamNonBlocking);
-		if (status != cudaSuccess) {
-			printf(" cudaStreamCreate error: %d \n", status);
-			const char *s = cudaGetErrorString(status);
-			char buffer[256];
-			printf("CUDA Error: %s\n", s);
-			status = cudaStreamCreateWithFlags(&streamsArray[i], cudaStreamDefault);
-			check_error(status);
-		}
+		cudaStreamCreate(&streamsArray[i]);
 		streamInit[i] = 1;
 	}
 	return streamsArray[i];
