@@ -23,7 +23,7 @@ void draw_bbox(image a, box bbox, int w, float r, float g, float b);
 void draw_label(image a, int r, int c, image label, const float *rgb);
 void write_label(image a, int r, int c, image *characters, char *string, float *rgb);
 void draw_detections(image im, int num, float thresh, box *boxes, float **probs, char **names, image **labels, int classes);
-void draw_detections_v3(image im, detection *dets, int num, float thresh, char **names, image **alphabet, int classes);
+void draw_detections_v3(image im, detection *dets, int num, float thresh, char **names, image **alphabet, int classes, int ext_output);
 image image_distance(image a, image b);
 void scale_image(image m, float s);
 image crop_image(image im, int dx, int dy, int w, int h);
@@ -77,10 +77,10 @@ image load_image(char *filename, int w, int h, int c);
 YOLODLL_API image load_image_color(char *filename, int w, int h);
 image **load_alphabet();
 
-YOLODLL_API float get_pixel(image m, int x, int y, int c);
-float get_pixel_extend(image m, int x, int y, int c);
-YOLODLL_API void set_pixel(image m, int x, int y, int c, float val);
-void add_pixel(image m, int x, int y, int c, float val);
+//float get_pixel(image m, int x, int y, int c);
+//float get_pixel_extend(image m, int x, int y, int c);
+//void set_pixel(image m, int x, int y, int c, float val);
+//void add_pixel(image m, int x, int y, int c, float val);
 float bilinear_interpolate(image im, float x, float y, int c);
 
 image get_image_layer(image m, int l);

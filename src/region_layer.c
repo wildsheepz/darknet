@@ -256,6 +256,8 @@ void forward_region_layer(const region_layer l, network_state state)
                     int best_class_id = -1;
                     for(t = 0; t < l.max_boxes; ++t){
                         box truth = float_to_box(state.truth + t*5 + b*l.truths);
+						int class_id = state.truth[t * 5 + b*l.truths + 4];
+						if (class_id >= l.classes) continue; // if label contains class_id more than number of classes in the cfg-file
                         if(!truth.x) break;
                         float iou = box_iou(pred, truth);
                         if (iou > best_iou) {
@@ -293,6 +295,12 @@ void forward_region_layer(const region_layer l, network_state state)
         }
         for(t = 0; t < l.max_boxes; ++t){
             box truth = float_to_box(state.truth + t*5 + b*l.truths);
+			int class_id = state.truth[t * 5 + b*l.truths + 4];
+			if (class_id >= l.classes) {
+				printf(" Warning: in txt-labels class_id=%d >= classes=%d in cfg-file. In txt-labels class_id should be [from 0 to %d] \n", class_id, l.classes, l.classes-1);
+				getchar();
+				continue; // if label contains class_id more than number of classes in the cfg-file
+			}
 
             if(!truth.x) break;
             float best_iou = 0;
@@ -339,8 +347,6 @@ void forward_region_layer(const region_layer l, network_state state)
                 l.delta[best_index + 4] = l.object_scale * (iou - l.output[best_index + 4]) * logistic_gradient(l.output[best_index + 4]);
             }
 
-
-            int class_id = state.truth[t*5 + b*l.truths + 4];
             if (l.map) class_id = l.map[class_id];
             delta_region_class(l.output, l.delta, best_index + 5, class_id, l.classes, l.softmax_tree, l.class_scale, &avg_cat, l.focal_loss);
             ++count;

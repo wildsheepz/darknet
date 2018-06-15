@@ -169,18 +169,63 @@ void pm(int M, int N, float *A)
 
 void find_replace(char *str, char *orig, char *rep, char *output)
 {
-    char buffer[4096] = {0};
+	char *buffer = calloc(8192, sizeof(char));
     char *p;
 
     sprintf(buffer, "%s", str);
     if(!(p = strstr(buffer, orig))){  // Is 'orig' even in 'str'?
         sprintf(output, "%s", str);
+		free(buffer);
         return;
     }
 
     *p = '\0';
 
     sprintf(output, "%s%s%s", buffer, rep, p+strlen(orig));
+	free(buffer);
+}
+
+void find_replace_extension(char *str, char *orig, char *rep, char *output)
+{
+	char *buffer = calloc(8192, sizeof(char));
+
+	sprintf(buffer, "%s", str);
+	char *p = strstr(buffer, orig);
+	int offset = (p - buffer);
+	int chars_from_end = strlen(buffer) - offset;
+	if (!p || chars_from_end != strlen(orig)) {  // Is 'orig' even in 'str' AND is 'orig' found at the end of 'str'?
+		sprintf(output, "%s", str);
+		free(buffer);
+		return;
+	}
+
+	*p = '\0';
+
+	sprintf(output, "%s%s%s", buffer, rep, p + strlen(orig));
+	free(buffer);
+}
+
+void replace_image_to_label(char *input_path, char *output_path) {
+	//find_replace(input_path, "/images/", "/labels/", output_path);	// COCO
+	find_replace(input_path, "/images/train2014/", "/labels/train2014/", output_path);	// COCO
+	find_replace(output_path, "/images/val2014/", "/labels/val2014/", output_path);		// COCO
+	//find_replace(output_path, "/JPEGImages/", "/labels/", output_path);	// PascalVOC
+	find_replace(output_path, "/VOC2007/JPEGImages/", "/VOC2007/labels/", output_path);		// PascalVOC
+	find_replace(output_path, "/VOC2012/JPEGImages/", "/VOC2012/labels/", output_path);		// PascalVOC
+
+	//find_replace(output_path, "/raw/", "/labels/", output_path);
+
+	// replace only ext of files
+	find_replace_extension(output_path, ".jpg", ".txt", output_path);
+	find_replace_extension(output_path, ".JPG", ".txt", output_path); // error
+	find_replace_extension(output_path, ".jpeg", ".txt", output_path);
+	find_replace_extension(output_path, ".JPEG", ".txt", output_path);
+	find_replace_extension(output_path, ".png", ".txt", output_path);
+	find_replace_extension(output_path, ".PNG", ".txt", output_path);
+	find_replace_extension(output_path, ".bmp", ".txt", output_path);
+	find_replace_extension(output_path, ".BMP", ".txt", output_path);
+	find_replace_extension(output_path, ".ppm", ".txt", output_path);
+	find_replace_extension(output_path, ".PPM", ".txt", output_path);
 }
 
 float sec(clock_t clocks)
@@ -208,19 +253,19 @@ void error(const char *s)
 {
     perror(s);
     assert(0);
-    exit(-1);
+    exit(EXIT_FAILURE);
 }
 
 void malloc_error()
 {
     fprintf(stderr, "Malloc error\n");
-    exit(-1);
+    exit(EXIT_FAILURE);
 }
 
 void file_error(char *s)
 {
     fprintf(stderr, "Couldn't open file: %s\n", s);
-    exit(0);
+    exit(EXIT_FAILURE);
 }
 
 list *split_str(char *s, char delim)
@@ -245,7 +290,7 @@ void strip(char *s)
     size_t offset = 0;
     for(i = 0; i < len; ++i){
         char c = s[i];
-        if(c==' '||c=='\t'||c=='\n'||c =='\r') ++offset;
+        if(c==' '||c=='\t'||c=='\n'||c =='\r'||c==0x0d||c==0x0a) ++offset;
         else s[i-offset] = c;
     }
     s[len-offset] = '\0';
@@ -297,8 +342,11 @@ char *fgetl(FILE *fp)
         fgets(&line[curr], readsize, fp);
         curr = strlen(line);
     }
-    if(line[curr-2] == 0x0d) line[curr-2] = 0x00;
-    if(line[curr-1] == 0x0a) line[curr-1] = 0x00;
+	if(curr >= 2)
+		if(line[curr-2] == 0x0d) line[curr-2] = 0x00;
+
+	if(curr >= 1)
+		if(line[curr-1] == 0x0a) line[curr-1] = 0x00;
 
     return line;
 }

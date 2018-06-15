@@ -44,6 +44,12 @@ using std::cerr;
 using std::endl;
 
 #include "opencv2/opencv.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/highgui/highgui_c.h"
+#include "opencv2/imgproc/imgproc_c.h"
+#ifndef CV_VERSION_EPOCH
+#include "opencv2/videoio/videoio.hpp"
+#endif
 using namespace cv;
 
 #include "http_stream.h"
@@ -196,6 +202,18 @@ void send_mjpeg(IplImage* ipl, int port, int timeout, int quality) {
 }
 // ----------------------------------------
 
+CvCapture* get_capture_video_stream(char *path) {
+	CvCapture* cap = NULL;
+	try {
+		cap = (CvCapture*)new cv::VideoCapture(path);
+	}
+	catch (...) {
+		std::cout << " Error: video-stream " << path << " can't be opened! \n";
+	}
+	return cap;
+}
+// ----------------------------------------
+
 CvCapture* get_capture_webcam(int index) {
 	CvCapture* cap = NULL;
 	try {
@@ -215,14 +233,18 @@ IplImage* get_webcam_frame(CvCapture *cap) {
 	try {
 		cv::VideoCapture &cpp_cap = *(cv::VideoCapture *)cap;
 		cv::Mat frame;
-		if (cpp_cap.isOpened()) {
+		if (cpp_cap.isOpened()) 
+		{
 			cpp_cap >> frame;
-			src = cvCreateImage(cvSize(frame.cols, frame.rows), 8, frame.channels());
-			*src = frame;
+			IplImage tmp = frame;
+			src = cvCloneImage(&tmp);
+		}
+		else {
+			std::cout << " Video-stream stoped! \n";
 		}
 	}
 	catch (...) {
-		std::cout << " Web-camera stoped! \n";
+		std::cout << " Video-stream stoped! \n";
 	}
 	return src;
 }
@@ -261,19 +283,26 @@ image image_data_augmentation(IplImage* ipl, int w, int h,
 
 	// HSV augmentation
 	// CV_BGR2HSV, CV_RGB2HSV, CV_HSV2BGR, CV_HSV2RGB
-	cv::Mat hsv_src;
-	cvtColor(sized, hsv_src, CV_BGR2HSV);	// also BGR -> RGB
+	if (ipl->nChannels >= 3)
+	{
+		cv::Mat hsv_src;
+		cvtColor(sized, hsv_src, CV_BGR2HSV);	// also BGR -> RGB
 	
-	std::vector<cv::Mat> hsv;
-	cv::split(hsv_src, hsv);
+		std::vector<cv::Mat> hsv;
+		cv::split(hsv_src, hsv);
 
-	hsv[1] *= dsat;
-	hsv[2] *= dexp;
-	hsv[0] += 179 * dhue;
+		hsv[1] *= dsat;
+		hsv[2] *= dexp;
+		hsv[0] += 179 * dhue;
 
-	cv::merge(hsv, hsv_src);
+		cv::merge(hsv, hsv_src);
 
-	cvtColor(hsv_src, sized, CV_HSV2RGB);	// now RGB instead of BGR
+		cvtColor(hsv_src, sized, CV_HSV2RGB);	// now RGB instead of BGR
+	}
+	else
+	{
+		sized *= dexp;
+	}
 
 	// Mat -> IplImage -> image
 	IplImage src = sized;
