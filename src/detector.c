@@ -1,3 +1,8 @@
+#ifdef _DEBUG
+#include <stdlib.h> 
+#include <crtdbg.h>  
+#endif
+
 #include "network.h"
 #include "region_layer.h"
 #include "cost_layer.h"
@@ -216,25 +221,8 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     sprintf(buff, "%s/%s_final.weights", backup_directory, base);
     save_weights(net, buff);
 
-#ifdef OPENCV
-	cvReleaseImage(&img);
-	cvDestroyAllWindows();
-#endif
-
-	// free memory
-	pthread_join(load_thread, 0);
-	free_data(buffer);
-
-	free(base);
-	free(paths);
-	free_list_contents(plist);
-	free_list(plist);
-
-	free_list_contents_kvp(options);
-	free_list(options);
-
-	free(nets);
-	free_network(net);
+	//cvReleaseImage(&img);
+	//cvDestroyAllWindows();
 }
 
 
@@ -1162,7 +1150,6 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
 
 	// free memory
 	free_ptrs(names, net.layers[net.n - 1].classes);
-	free_list_contents_kvp(options);
 	free_list(options);
 
 	int i;
@@ -1249,9 +1236,6 @@ void run_detector(int argc, char **argv)
 				if (filename[strlen(filename) - 1] == 0x0d) filename[strlen(filename) - 1] = 0;
         demo(cfg, weights, thresh, hier_thresh, cam_index, filename, names, classes, frame_skip, prefix, out_filename,
 			http_stream_port, dont_show, ext_output);
-
-		free_list_contents_kvp(options);
-		free_list(options);
     }
 	else printf(" There isn't such command: %s", argv[2]);
 }
