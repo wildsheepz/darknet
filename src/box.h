@@ -30,9 +30,6 @@ typedef struct detection {
 	float *mask;
 	float objectness;
 	int sort_class;
-	// The most probable class id: the best class index in this->prob.
-	// Is filled temporary when processing results, otherwise not initialized
-	int best_class;
 } detection;
 
 box float_to_box(float *f);
