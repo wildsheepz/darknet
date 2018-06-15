@@ -217,7 +217,7 @@ IplImage* get_webcam_frame(CvCapture *cap) {
 		cv::Mat frame;
 		if (cpp_cap.isOpened()) {
 			cpp_cap >> frame;
-			src = cvCreateImageHeader(cvSize(frame.cols, frame.rows), 8, frame.channels());
+			src = cvCreateImage(cvSize(frame.cols, frame.rows), 8, frame.channels());
 			*src = frame;
 		}
 	}
