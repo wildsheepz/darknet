@@ -113,7 +113,6 @@ struct layer{
 	int tanh;
 	int *mask;
 	int total;
-	float bflops;
 
     int adam;
     float B1;

@@ -55,7 +55,7 @@ layer make_yolo_layer(int batch, int w, int h, int n, int total, int *mask, int 
     l.delta_gpu = cuda_make_array(l.delta, batch*l.outputs);
 #endif
 
-    fprintf(stderr, "yolo\n");
+    fprintf(stderr, "detection\n");
     srand(0);
 
     return l;
@@ -112,7 +112,7 @@ float delta_yolo_box(box truth, float *x, float *biases, int n, int index, int i
 void delta_yolo_class(float *output, float *delta, int index, int class_id, int classes, int stride, float *avg_cat, int focal_loss)
 {
     int n;
-    if (delta[index + stride*class_id]){
+    if (delta[index]){
         delta[index + stride*class_id] = 1 - output[index + stride*class_id];
         if(avg_cat) *avg_cat += output[index + stride*class_id];
         return;
@@ -200,12 +200,6 @@ void forward_yolo_layer(const layer l, network_state state)
                     int best_t = 0;
                     for(t = 0; t < l.max_boxes; ++t){
                         box truth = float_to_box_stride(state.truth + t*(4 + 1) + b*l.truths, 1);
-						int class_id = state.truth[t*(4 + 1) + b*l.truths + 4];
-						if (class_id >= l.classes) {
-							printf(" Warning: in txt-labels class_id=%d >= classes=%d in cfg-file. In txt-labels class_id should be [from 0 to %d] \n", class_id, l.classes, l.classes - 1);
-							getchar();
-							continue; // if label contains class_id more than number of classes in the cfg-file
-						}
                         if(!truth.x) break;
                         float iou = box_iou(pred, truth);
                         if (iou > best_iou) {
@@ -222,10 +216,10 @@ void forward_yolo_layer(const layer l, network_state state)
                     if (best_iou > l.truth_thresh) {
                         l.delta[obj_index] = 1 - l.output[obj_index];
 
-                        int class_id = state.truth[best_t*(4 + 1) + b*l.truths + 4];
-                        if (l.map) class_id = l.map[class_id];
+                        int class = state.truth[best_t*(4 + 1) + b*l.truths + 4];
+                        if (l.map) class = l.map[class];
                         int class_index = entry_index(l, b, n*l.w*l.h + j*l.w + i, 4 + 1);
-                        delta_yolo_class(l.output, l.delta, class_index, class_id, l.classes, l.w*l.h, 0, l.focal_loss);
+                        delta_yolo_class(l.output, l.delta, class_index, class, l.classes, l.w*l.h, 0, l.focal_loss);
                         box truth = float_to_box_stride(state.truth + best_t*(4 + 1) + b*l.truths, 1);
                         delta_yolo_box(truth, l.output, l.biases, l.mask[n], box_index, i, j, l.w, l.h, state.net.w, state.net.h, l.delta, (2-truth.w*truth.h), l.w*l.h);
                     }
@@ -234,8 +228,6 @@ void forward_yolo_layer(const layer l, network_state state)
         }
         for(t = 0; t < l.max_boxes; ++t){
             box truth = float_to_box_stride(state.truth + t*(4 + 1) + b*l.truths, 1);
-			int class_id = state.truth[t*(4 + 1) + b*l.truths + 4];
-			if (class_id >= l.classes) continue; // if label contains class_id more than number of classes in the cfg-file
 
             if(!truth.x) break;
             float best_iou = 0;
@@ -264,10 +256,10 @@ void forward_yolo_layer(const layer l, network_state state)
                 avg_obj += l.output[obj_index];
                 l.delta[obj_index] = 1 - l.output[obj_index];
 
-                int class_id = state.truth[t*(4 + 1) + b*l.truths + 4];
-                if (l.map) class_id = l.map[class_id];
+                int class = state.truth[t*(4 + 1) + b*l.truths + 4];
+                if (l.map) class = l.map[class];
                 int class_index = entry_index(l, b, mask_n*l.w*l.h + j*l.w + i, 4 + 1);
-                delta_yolo_class(l.output, l.delta, class_index, class_id, l.classes, l.w*l.h, &avg_cat, l.focal_loss);
+                delta_yolo_class(l.output, l.delta, class_index, class, l.classes, l.w*l.h, &avg_cat, l.focal_loss);
 
                 ++count;
                 ++class_count;

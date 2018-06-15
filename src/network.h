@@ -52,7 +52,6 @@ typedef struct network{
     int h, w, c;
     int max_crop;
     int min_crop;
-    int flip; // horizontal flip 50% probability augmentaiont for classifier training (default = 1)
     float angle;
     float aspect;
     float exposure;
@@ -134,12 +133,10 @@ int resize_network(network *net, int w, int h);
 void set_batch_network(network *net, int b);
 int get_network_input_size(network net);
 float get_network_cost(network net);
-YOLODLL_API layer* get_network_layer(network* net, int i);
 YOLODLL_API detection *get_network_boxes(network *net, int w, int h, float thresh, float hier, int *map, int relative, int *num, int letter);
 YOLODLL_API detection *make_network_boxes(network *net, float thresh, int *num);
 YOLODLL_API void free_detections(detection *dets, int n);
 YOLODLL_API void reset_rnn(network *net);
-YOLODLL_API network *load_network_custom(char *cfg, char *weights, int clear, int batch);
 YOLODLL_API network *load_network(char *cfg, char *weights, int clear);
 YOLODLL_API float *network_predict_image(network *net, image im);
 YOLODLL_API void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, int ngpus, int clear, int dont_show);
@@ -148,7 +145,7 @@ YOLODLL_API int network_height(network *net);
 
 int get_network_nuisance(network net);
 int get_network_background(network net);
-YOLODLL_API void fuse_conv_batchnorm(network net);
+void fuse_conv_batchnorm(network net);
 
 #ifdef __cplusplus
 }
