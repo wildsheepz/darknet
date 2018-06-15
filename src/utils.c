@@ -297,11 +297,8 @@ char *fgetl(FILE *fp)
         fgets(&line[curr], readsize, fp);
         curr = strlen(line);
     }
-	if(curr >= 2)
-		if(line[curr-2] == 0x0d) line[curr-2] = 0x00;
-
-	if(curr >= 1)
-		if(line[curr-1] == 0x0a) line[curr-1] = 0x00;
+    if(line[curr-2] == 0x0d) line[curr-2] = 0x00;
+    if(line[curr-1] == 0x0a) line[curr-1] = 0x00;
 
     return line;
 }
