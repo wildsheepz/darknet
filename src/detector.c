@@ -87,8 +87,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     load_args args = {0};
     args.w = net.w;
     args.h = net.h;
-	args.c = net.c;
-	args.paths = paths;
+    args.paths = paths;
     args.n = imgs;
     args.m = plist->size;
     args.classes = classes;
@@ -389,7 +388,6 @@ void validate_detector(char *datacfg, char *cfgfile, char *weightfile, char *out
 	load_args args = { 0 };
 	args.w = net.w;
 	args.h = net.h;
-	args.c = net.c;
 	args.type = IMAGE_DATA;
 	//args.type = LETTERBOX_DATA;
 
@@ -484,7 +482,7 @@ void validate_detector_recall(char *datacfg, char *cfgfile, char *weightfile)
 
 	for (i = 0; i < m; ++i) {
 		char *path = paths[i];
-		image orig = load_image(path, 0, 0, net.c);
+		image orig = load_image_color(path, 0, 0);
 		image sized = resize_image(orig, net.w, net.h);
 		char *id = basecfg(path);
 		network_predict(net, sized.data);
@@ -597,7 +595,6 @@ void validate_detector_map(char *datacfg, char *cfgfile, char *weightfile, float
 	load_args args = { 0 };
 	args.w = net.w;
 	args.h = net.h;
-	args.c = net.c;
 	args.type = IMAGE_DATA;
 	//args.type = LETTERBOX_DATA;
 
@@ -1096,7 +1093,7 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
             if(!input) return;
             strtok(input, "\n");
         }
-        image im = load_image(input,0,0,net.c);
+        image im = load_image_color(input,0,0);
 		int letterbox = 0;
         //image sized = resize_image(im, net.w, net.h);
 		image sized = letterbox_image(im, net.w, net.h); letterbox = 1;

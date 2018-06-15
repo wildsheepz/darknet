@@ -283,26 +283,19 @@ image image_data_augmentation(IplImage* ipl, int w, int h,
 
 	// HSV augmentation
 	// CV_BGR2HSV, CV_RGB2HSV, CV_HSV2BGR, CV_HSV2RGB
-	if (ipl->nChannels >= 3)
-	{
-		cv::Mat hsv_src;
-		cvtColor(sized, hsv_src, CV_BGR2HSV);	// also BGR -> RGB
+	cv::Mat hsv_src;
+	cvtColor(sized, hsv_src, CV_BGR2HSV);	// also BGR -> RGB
 	
-		std::vector<cv::Mat> hsv;
-		cv::split(hsv_src, hsv);
+	std::vector<cv::Mat> hsv;
+	cv::split(hsv_src, hsv);
 
-		hsv[1] *= dsat;
-		hsv[2] *= dexp;
-		hsv[0] += 179 * dhue;
+	hsv[1] *= dsat;
+	hsv[2] *= dexp;
+	hsv[0] += 179 * dhue;
 
-		cv::merge(hsv, hsv_src);
+	cv::merge(hsv, hsv_src);
 
-		cvtColor(hsv_src, sized, CV_HSV2RGB);	// now RGB instead of BGR
-	}
-	else
-	{
-		sized *= dexp;
-	}
+	cvtColor(hsv_src, sized, CV_HSV2RGB);	// now RGB instead of BGR
 
 	// Mat -> IplImage -> image
 	IplImage src = sized;
