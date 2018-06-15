@@ -21,8 +21,6 @@
 #include "opencv2/videoio/videoio_c.h"
 #endif
 image get_image_from_stream(CvCapture *cap);
-image get_image_from_stream_cpp(CvCapture *cap);
-#include "http_stream.h"
 #endif
 
 float *get_regression_values(char **labels, int n)
@@ -862,14 +860,11 @@ void threat_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_i
     srand(2222222);
     CvCapture * cap;
 
-	if (filename) {
-		//cap = cvCaptureFromFile(filename);
-		cap = get_capture_video_stream(filename);
-	}
-	else {
-		//cap = cvCaptureFromCAM(cam_index);
-		cap = get_capture_webcam(filename);
-	}
+    if(filename){
+        cap = cvCaptureFromFile(filename);
+    }else{
+        cap = cvCaptureFromCAM(cam_index);
+    }
 
     int top = option_find_int(options, "top", 1);
 
@@ -891,8 +886,7 @@ void threat_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_i
         struct timeval tval_before, tval_after, tval_result;
         gettimeofday(&tval_before, NULL);
 
-		//image in = get_image_from_stream(cap);
-        image in = get_image_from_stream_cpp(cap);
+        image in = get_image_from_stream(cap);
         if(!in.data) break;
         image in_s = resize_image(in, net.w, net.h);
 
@@ -998,14 +992,11 @@ void gun_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_inde
     srand(2222222);
     CvCapture * cap;
 
-	if (filename) {
-		//cap = cvCaptureFromFile(filename);
-		cap = get_capture_video_stream(filename);
-	}
-	else {
-		//cap = cvCaptureFromCAM(cam_index);
-		cap = get_capture_webcam(filename);
-	}
+    if(filename){
+        cap = cvCaptureFromFile(filename);
+    }else{
+        cap = cvCaptureFromCAM(cam_index);
+    }
 
     int top = option_find_int(options, "top", 1);
 
@@ -1024,8 +1015,7 @@ void gun_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_inde
         struct timeval tval_before, tval_after, tval_result;
         gettimeofday(&tval_before, NULL);
 
-		//image in = get_image_from_stream(cap);
-        image in = get_image_from_stream_cpp(cap);
+        image in = get_image_from_stream(cap);
         image in_s = resize_image(in, net.w, net.h);
         show_image(in, "Threat Detection");
 
@@ -1080,11 +1070,9 @@ void demo_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_ind
     CvCapture * cap;
 
     if(filename){
-        //cap = cvCaptureFromFile(filename);
-		cap = get_capture_video_stream(filename);
+        cap = cvCaptureFromFile(filename);
     }else{
-        //cap = cvCaptureFromCAM(cam_index);
-		cap = get_capture_webcam(filename);
+        cap = cvCaptureFromCAM(cam_index);
     }
 
     int top = option_find_int(options, "top", 1);
@@ -1104,8 +1092,7 @@ void demo_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_ind
         struct timeval tval_before, tval_after, tval_result;
         gettimeofday(&tval_before, NULL);
 
-		//image in = get_image_from_stream(cap);
-        image in = get_image_from_stream_cpp(cap);
+        image in = get_image_from_stream(cap);
         image in_s = resize_image(in, net.w, net.h);
         show_image(in, "Classifier");
 
