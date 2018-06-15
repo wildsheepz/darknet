@@ -479,7 +479,6 @@ void validate_detector_recall(char *datacfg, char *cfgfile, char *weightfile)
 		find_replace(labelpath, ".bmp", ".txt", labelpath);
 		find_replace(labelpath, ".JPG", ".txt", labelpath);
 		find_replace(labelpath, ".JPEG", ".txt", labelpath);
-		find_replace(labelpath, ".ppm", ".txt", labelpath);
 
 		int num_labels = 0;
 		box_label *truth = read_boxes(labelpath, &num_labels);
@@ -637,7 +636,6 @@ void validate_detector_map(char *datacfg, char *cfgfile, char *weightfile, float
 			find_replace(labelpath, ".bmp", ".txt", labelpath);
 			find_replace(labelpath, ".JPG", ".txt", labelpath);
 			find_replace(labelpath, ".JPEG", ".txt", labelpath);
-			find_replace(labelpath, ".ppm", ".txt", labelpath);
 			int num_labels = 0;
 			box_label *truth = read_boxes(labelpath, &num_labels);
 			int i, j;
@@ -901,7 +899,6 @@ void calc_anchors(char *datacfg, int num_of_clusters, int width, int height, int
 		find_replace(labelpath, ".bmp", ".txt", labelpath);
 		find_replace(labelpath, ".JPG", ".txt", labelpath);
 		find_replace(labelpath, ".JPEG", ".txt", labelpath);
-		find_replace(labelpath, ".ppm", ".txt", labelpath);
 		int num_labels = 0;
 		box_label *truth = read_boxes(labelpath, &num_labels);
 		//printf(" new path: %s \n", labelpath);
