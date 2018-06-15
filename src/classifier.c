@@ -87,7 +87,6 @@ void train_classifier(char *datacfg, char *cfgfile, char *weightfile, int *gpus,
 
     args.min = net.min_crop;
     args.max = net.max_crop;
-    args.flip = net.flip;
     args.angle = net.angle;
     args.aspect = net.aspect;
     args.exposure = net.exposure;
@@ -194,7 +193,6 @@ void train_classifier(char *datacfg, char *cfgfile, char *weightfile, int *gpus,
 
    args.min = net.min_crop;
    args.max = net.max_crop;
-   args.flip = net.flip;
    args.angle = net.angle;
    args.aspect = net.aspect;
    args.exposure = net.exposure;

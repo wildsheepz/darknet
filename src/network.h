@@ -52,7 +52,6 @@ typedef struct network{
     int h, w, c;
     int max_crop;
     int min_crop;
-    int flip; // horizontal flip 50% probability augmentaiont for classifier training (default = 1)
     float angle;
     float aspect;
     float exposure;
