@@ -493,11 +493,6 @@ image get_network_image_layer(network net, int i)
     return def;
 }
 
-layer* get_network_layer(network* net, int i)
-{
-    return net->layers + i;
-}
-
 image get_network_image(network net)
 {
     int i;
