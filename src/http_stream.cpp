@@ -44,12 +44,6 @@ using std::cerr;
 using std::endl;
 
 #include "opencv2/opencv.hpp"
-#include "opencv2/highgui.hpp"
-#include "opencv2/highgui/highgui_c.h"
-#include "opencv2/imgproc/imgproc_c.h"
-#ifndef CV_VERSION_EPOCH
-#include "opencv2/videoio/videoio.hpp"
-#endif
 using namespace cv;
 
 #include "http_stream.h"
@@ -202,18 +196,6 @@ void send_mjpeg(IplImage* ipl, int port, int timeout, int quality) {
 }
 // ----------------------------------------
 
-CvCapture* get_capture_video_stream(char *path) {
-	CvCapture* cap = NULL;
-	try {
-		cap = (CvCapture*)new cv::VideoCapture(path);
-	}
-	catch (...) {
-		std::cout << " Error: Web-camera " << path << " can't be opened! \n";
-	}
-	return cap;
-}
-// ----------------------------------------
-
 CvCapture* get_capture_webcam(int index) {
 	CvCapture* cap = NULL;
 	try {
@@ -233,18 +215,14 @@ IplImage* get_webcam_frame(CvCapture *cap) {
 	try {
 		cv::VideoCapture &cpp_cap = *(cv::VideoCapture *)cap;
 		cv::Mat frame;
-		if (cpp_cap.isOpened()) 
-		{
+		if (cpp_cap.isOpened()) {
 			cpp_cap >> frame;
-			IplImage tmp = frame;
-			src = cvCloneImage(&tmp);
-		}
-		else {
-			std::cout << " Video-stream stoped! \n";
+			src = cvCreateImageHeader(cvSize(frame.cols, frame.rows), 8, frame.channels());
+			*src = frame;
 		}
 	}
 	catch (...) {
-		std::cout << " Video-stream stoped! \n";
+		std::cout << " Web-camera stoped! \n";
 	}
 	return src;
 }

@@ -34,10 +34,13 @@ static int demo_classes;
 static float **probs;
 static box *boxes;
 static network net;
+static image in   ;
 static image in_s ;
+static image det  ;
 static image det_s;
+static image disp = {0};
 static CvCapture * cap;
-static int cpp_video_capture = 0;
+static int use_webcam = 0;
 static float fps = 0;
 static float demo_thresh = 0;
 
@@ -50,7 +53,7 @@ static float *avg;
 void draw_detections_cv(IplImage* show_img, int num, float thresh, box *boxes, float **probs, char **names, image **alphabet, int classes);
 void draw_detections_cv_v3(IplImage* show_img, detection *dets, int num, float thresh, char **names, image **alphabet, int classes);
 void show_image_cv_ipl(IplImage *disp, const char *name);
-image get_image_from_stream_resize(CvCapture *cap, int w, int h, IplImage** in_img, int cpp_video_capture);
+image get_image_from_stream_resize(CvCapture *cap, int w, int h, IplImage** in_img, int use_webcam);
 IplImage* in_img;
 IplImage* det_img;
 IplImage* show_img;
@@ -60,14 +63,16 @@ static int flag_exit;
 void *fetch_in_thread(void *ptr)
 {
     //in = get_image_from_stream(cap);
-	in_s = get_image_from_stream_resize(cap, net.w, net.h, &in_img, cpp_video_capture);
-    if(!in_s.data){
+	in = get_image_from_stream_resize(cap, net.w, net.h, &in_img, use_webcam);
+    if(!in.data){
         //error("Stream closed.");
 		printf("Stream closed.\n");
 		flag_exit = 1;
 		return EXIT_FAILURE;
     }
     //in_s = resize_image(in, net.w, net.h);
+	in_s = make_image(in.w, in.h, in.c);
+	memcpy(in_s.data, in.data, in.h*in.w*in.c*sizeof(float));
 	
     return 0;
 }
@@ -97,7 +102,7 @@ void *detect_in_thread(void *ptr)
 	*/
 	int letter = 0;
 	int nboxes = 0;
-	detection *dets = get_network_boxes(&net, det_s.w, det_s.h, demo_thresh, demo_thresh, 0, 1, &nboxes, letter);
+	detection *dets = get_network_boxes(&net, det.w, det.h, demo_thresh, demo_thresh, 0, 1, &nboxes, letter);
 	if (nms) do_nms_obj(dets, nboxes, l.classes, nms);
 
     printf("\033[2J");
@@ -105,8 +110,8 @@ void *detect_in_thread(void *ptr)
     printf("\nFPS:%.1f\n",fps);
     printf("Objects:\n\n");
 
-    //images[demo_index] = det;
-    //det = images[(demo_index + FRAMES/2 + 1)%FRAMES];
+    images[demo_index] = det;
+    det = images[(demo_index + FRAMES/2 + 1)%FRAMES];
 	ipl_images[demo_index] = det_img;
 	det_img = ipl_images[(demo_index + FRAMES / 2 + 1) % FRAMES];
     demo_index = (demo_index + 1)%FRAMES;
@@ -114,7 +119,7 @@ void *detect_in_thread(void *ptr)
 	//draw_detections(det, l.w*l.h*l.n, demo_thresh, boxes, probs, demo_names, demo_alphabet, demo_classes);
 	draw_detections_cv_v3(det_img, dets, nboxes, demo_thresh, demo_names, demo_alphabet, demo_classes);
 	//draw_detections_cv(det_img, l.w*l.h*l.n, demo_thresh, boxes, probs, demo_names, demo_alphabet, demo_classes);
-	free_detections(dets, nboxes);
+	free(dets);
 
 	return 0;
 }
@@ -149,20 +154,15 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
 
     if(filename){
         printf("video file: %s\n", filename);
-//#ifdef CV_VERSION_EPOCH	// OpenCV 2.x
-//		cap = cvCaptureFromFile(filename);
-//#else					// OpenCV 3.x
-		cpp_video_capture = 1;
-		cap = get_capture_video_stream(filename);
-//#endif
+        cap = cvCaptureFromFile(filename);
     }else{
 		printf("Webcam index: %d\n", cam_index);
-//#ifdef CV_VERSION_EPOCH	// OpenCV 2.x
-//        cap = cvCaptureFromCAM(cam_index);
-//#else					// OpenCV 3.x
-		cpp_video_capture = 1;
+#ifdef CV_VERSION_EPOCH	// OpenCV 2.x
+        cap = cvCaptureFromCAM(cam_index);
+#else					// OpenCV 3.x
+		use_webcam = 1;
 		cap = get_capture_webcam(cam_index);
-//#endif
+#endif
     }
 
     if(!cap) error("Couldn't connect to webcam.\n");
@@ -185,17 +185,22 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
 
     fetch_in_thread(0);
 	det_img = in_img;
+    det = in;
     det_s = in_s;
 
     fetch_in_thread(0);
     detect_in_thread(0);
+    disp = det;
 	det_img = in_img;
+    det = in;
     det_s = in_s;
 
     for(j = 0; j < FRAMES/2; ++j){
         fetch_in_thread(0);
         detect_in_thread(0);
+        disp = det;
 		det_img = in_img;
+        det = in;
         det_s = in_s;
     }
 
@@ -244,7 +249,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
             }else{
                 char buff[256];
                 sprintf(buff, "%s_%08d", prefix, count);
-                //save_image(disp, buff);
+                save_image(disp, buff);
             }
 
 			// if you run it with param -http_port 8090  then open URL in your web-browser: http://localhost:8090
@@ -270,22 +275,27 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
 			if (flag_exit == 1) break;
 
             if(delay == 0){
+                free_image(disp);
+                disp  = det;
 				show_img = det_img;
             }
 			det_img = in_img;
+            det   = in;
             det_s = in_s;
         }else {
             fetch_in_thread(0);
 			det_img = in_img;
+            det   = in;
             det_s = in_s;
             detect_in_thread(0);
-
-			show_img = det_img;
+            if(delay == 0) {
+                free_image(disp);
+                disp = det;
+            }
 			if (!dont_show) {
-				show_image_cv_ipl(show_img, "Demo");
+				show_image(disp, "Demo");
 				cvWaitKey(1);
 			}
-			cvReleaseImage(&show_img);
         }
         --delay;
         if(delay < 0){

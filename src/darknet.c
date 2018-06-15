@@ -1,8 +1,3 @@
-#ifdef _DEBUG
-#include <stdlib.h> 
-#include <crtdbg.h>  
-#endif
-
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -355,10 +350,6 @@ void visualize(char *cfgfile, char *weightfile)
 
 int main(int argc, char **argv)
 {
-#ifdef _DEBUG
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-#endif
-
     //test_resize("data/bad.jpg");
     //test_box();
     //test_convolutional_layer();
