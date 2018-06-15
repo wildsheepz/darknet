@@ -10,8 +10,8 @@ import os
 import platform
 import re
 import sys
-import matplotlib.pyplot as plt
 
+import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 
 
@@ -98,8 +98,6 @@ def log_parser(args):
     plt.savefig(save_path, dpi=300)
     if args.show_plot:
         plt.show()
-    else:
-        plt.switch_backend('agg')
 
 
 if __name__ == "__main__":
